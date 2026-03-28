@@ -20,7 +20,6 @@ daily_weather_agg AS (
         COUNT(weather) AS count_occurrence
     FROM daily_weather
     GROUP BY daily_date, weather
-    -- Оставляем только ту погоду, которая была чаще всего в этот день
     QUALIFY ROW_NUMBER() OVER (PARTITION BY daily_date ORDER BY COUNT(weather) DESC) = 1
 )
 

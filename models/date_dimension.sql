@@ -1,17 +1,19 @@
-WITH CTE as (
+with raw_data as (
+    select 
+        to_timestamp(trim(STARTED_AT, '"'), 'YYYY-MM-DD HH24:MI:SS.FF') as cleaned_started_at
+    from {{ source('demo', 'bike') }}
+    where trim(lower(STARTED_AT), '"') not in ('started_at', 'starttime')
+),
+
+CTE as (
     select
-to_timestamp(STARTED_AT) AS STARTED_AT,
-DATE(to_timestamp(STARTED_AT)) AS DATE_STARTED_AT,
-HOUR(to_timestamp(STARTED_AT)) AS HOUR_STARTED_AT,
-DAYNAME(to_timestamp(STARTED_AT)),
-{{daytype('STARTED_AT')}} as DAY_TYPE,
-{{get_season('STARTED_AT')}} AS STATION_OF_YEAR
-
-
-from {{ source('demo', 'bike') }}
-where STARTED_AT != 'started_at'
+        cleaned_started_at as STARTED_AT,
+        date(cleaned_started_at) as DATE_STARTED_AT,
+        hour(cleaned_started_at) as HOUR_STARTED_AT,
+        dayname(cleaned_started_at) as DAY_NAME,
+        {{ daytype('cleaned_started_at') }} as DAY_TYPE,
+        {{ get_season('cleaned_started_at') }} as SEASON_OF_YEAR
+    from raw_data
 )
 
-select
-*
-from CTE
+select * from CTE
